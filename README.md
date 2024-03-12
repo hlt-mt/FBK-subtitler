@@ -28,14 +28,14 @@ docker image ls -a
 ```
 
 ## Extract archives
-Extract the archive with the FBK data:
+Extract the archive of the FBK data:
 ```
 tar xvfz FBK_data_v1_2.tar.gz
 ```
 This operation should end with the directory "FBK_data", whose size is around 5.8 GB.
-There are no constraints on where the "FBK_data" directory is to be positioned inside the file systems.
+There are no constraints on the position of the "FBK_data" directory inside the file system.
 
-Extract the scripts archive:
+Extract the archive of the scripts :
 ```
 tar xvfz scripts_v1_2.tar.gz
 ```
