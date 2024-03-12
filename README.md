@@ -13,9 +13,9 @@ The FBK subtitler requires:
 # Installation
 ## Download
 Three files have to be downloaded:
-1. the main docker image (around 7.5 GB)
-2. the FBK data archive v1.2 (around 4.3 GB)
-3. the script archive v1.2 (around 1.5 KB)
+1. the [main docker image](https://fbk.sharepoint.com/:u:/s/MTUnit/EZj6MT7Mro5JjKHz4H2criUB2QTlPChDCICPN3RUdFay1g?e=0egwxj) (around 7.5 GB)
+2. the [FBK data archive v1.2](https://fbk.sharepoint.com/:u:/s/MTUnit/EY_usL_dbypJrDzYZP-hWJkBqemsbbD4CHrB27dpZ_Slew?e=m0fzUT) (around 4.3 GB)
+3. the [script archive v1.2](https://fbk.sharepoint.com/:u:/s/MTUnit/ERxRiuN9LdNBgcrpFp4FgYkB5kGRnw0NKUFJsriCj1VH5g?e=bmwsVa) (around 1.5 KB)
 
 ## Add the docker image
 Once downloaded the compressed docker image (docker_img_fbk_subtitler_v1_2.tar.gz)), it has to be added to your docker environment:
