@@ -56,14 +56,18 @@ To start the FBK subtitler service issue the command
 bash DO_FBK-subtitler_start.sh
 ```
 A set of messages are reported: please wait until this message appears
-`FBK subtitler ready`
+```
+FBK subtitler ready
+```
 
 To end the FBK subtitles pipeline issue the command
 ```
 bash DO_FBK-subtitler_end.sh
 ```
 A set of messages are reported: please wait until this message appears
-`successfully ended FBK subtitler`
+```
+successfully ended FBK subtitler
+```
 
 # Usage
 To use the FBK subtitler service, please read the [API specification document](https://docs.google.com/document/d/1WC8WcEfOibmNFhZWqMAJDqszL3xPTTc3SFoFGG0yHOs/edit?usp=sharing)
