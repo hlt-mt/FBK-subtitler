@@ -1,5 +1,5 @@
 # FBK-subtitler
-Repository containing the open source code of the subtitler developed by the FBK MT unit.
+Repository containing the open source code of the subtitler developed by the FBK MT unit within the [AI4Culture project](http://epitomy.co/project/ai4culture/).
 
 ## Release
 FBK subtitler v1.2
