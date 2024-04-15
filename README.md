@@ -1,5 +1,5 @@
 # FBK AI4C-CSC subtitler
-Repository containing the open source code of the subtitler developed by the FBK MT unit under the European Union project "([AI4Culture: An AI platform for the cultural heritage data space](https://pro.europeana.eu/project/ai4culture-an-ai-platform-for-the-cultural-heritage-data-space)" (Action number 101100683).
+Repository containing the open source code of the subtitler developed by the FBK MT unit under the European Union project "[AI4Culture: An AI platform for the cultural heritage data space](https://pro.europeana.eu/project/ai4culture-an-ai-platform-for-the-cultural-heritage-data-space)" (Action number 101100683).
 
 ## Release
 FBK AI4C-CSC subtitler v1.2
