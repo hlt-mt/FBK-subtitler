@@ -1,11 +1,12 @@
-# FBK-subtitler
-Repository containing the open source code of the subtitler developed by the FBK MT unit within the [AI4Culture project](http://epitomy.co/project/ai4culture/).
+# FBK AI4C-CSC subtitler
+Repository containing the open source code of the subtitler developed by the FBK MT unit under the European Union project “AI4Culture: An AI platform for the cultural heritage data space” (Action number 101100683).
+# ([AI4Culture project](http://epitomy.co/project/ai4culture/).)
 
 ## Release
-FBK subtitler v1.2
+FBK AI4C-CSC subtitler v1.2
 
 ##  Requirements
-The FBK subtitler requires:
+The FBK AI4C-CSC subtitler requires:
 1. a GPU card (tested on Tesla K80)
 2. a Linux OS (tested on Ubuntu 20.04, with nvidia drivers 470, CUDA 11.4 and cudnn 8)
 3. a working docker installation
