@@ -32,20 +32,21 @@ ENV VIRTUAL_ENV=/opt/env/helsinki
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$ORIG_PATH"
 RUN pip install --no-cache-dir --upgrade pip
-RUN pip install --no-cache-dir torch torchvision torchaudio transformers sentencepiece --index-url https://download.pytorch.org/whl/cu118
+RUN pip install torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 --index-url https://download.pytorch.org/whl/cu118
+
 # Create app directory
-WORKDIR /workspace
+WORKDIR /FBK
 # Copy pipeline files
 COPY srv_pipeline_cascade.sh srv_pipeline_direct.sh /FBK/
-RUN mkdir -p /workspace/scripts
-COPY scripts/. /workspace/scripts
+RUN mkdir -p /FBK/scripts
+COPY scripts/. /FBK/scripts
 # Copy and set SHAS files & env
-RUN mkdir -p /workspace/SHAS
-COPY SHAS/. /workspace/SHAS
-ENV SHAS_ROOT=/workspace/SHAS
+RUN mkdir -p /FBK/SHAS
+COPY SHAS/. /FBK/SHAS
+ENV SHAS_ROOT=/FBK/SHAS
 # Copy http server files
-RUN mkdir -p /workspace/server/data
-COPY CMD.httpserver_start.sh httpserver.py /workspace/server/
-COPY data/. /workspace/server/data
+RUN mkdir -p /FBK/server/data
+COPY CMD.httpserver_start.sh httpserver.py /FBK/server/
+COPY data/. /FBK/server/data
 # run the command
 ENTRYPOINT ["entrypoint.sh"]

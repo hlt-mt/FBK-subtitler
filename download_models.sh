@@ -1,4 +1,4 @@
-cd /workspace
+cd /FBK
 # download models if the directory doesn't contains the same version
 if [ ! -d "models" ]; then
     mkdir models
