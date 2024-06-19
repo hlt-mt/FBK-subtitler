@@ -33,8 +33,8 @@ RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$ORIG_PATH"
 ENV TMPDIR=/var/tmp
 RUN pip install --no-cache-dir --upgrade pip
-RUN TMPDIR=/var/tmp pip cache purge && pip install --cache-dir /var/tmp --build /var/tmp torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 --index-url https://download.pytorch.org/whl/cu118 && \
-    TMPDIR=/var/tmp pip install --cache-dir /var/tmp --build /var/tmp fairseq==0.10.2 fastBPE==0.1.0 sentencepiece==0.1.96
+RUN TMPDIR=/var/tmp pip cache purge && pip install --cache-dir /var/tmp torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 --index-url https://download.pytorch.org/whl/cu118 && \
+    TMPDIR=/var/tmp pip install --cache-dir /var/tmp fairseq==0.10.2 fastBPE==0.1.0 sentencepiece==0.1.96
 
 # Create app directory
 WORKDIR /FBK
