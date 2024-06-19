@@ -31,7 +31,7 @@ RUN pip install --no-cache-dir faster_whisper_cli faster-whisper ctranslate2==3.
 ENV VIRTUAL_ENV=/opt/env/helsinki
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$ORIG_PATH"
-RUN pip install --no-cache-dir torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 --index-url https://download.pytorch.org/whl/cu118
+RUN pip install --cache-dir /var/tmp torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 --index-url https://download.pytorch.org/whl/cu118
 RUN pip install --cache-dir /var/tmp transformers sentencepiece
 
 
