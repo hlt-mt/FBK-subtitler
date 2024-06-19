@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: europeana-models
+  namespace: ai-${ENV}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: europeana-service
+  namespace: ai-${ENV}
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: europeana-service
+  template:
+    metadata:
+      labels:
+        app: europeana-service
+    spec:
+      runtimeClassName: nvidia
+      containers:
+      - name: europeana-service
+        image: $IMAGE
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: europeana-models
+          mountPath: /root/.cache
+        resources:
+          requests:
+            memory: "10Gi"
+            cpu: "500m"
+            nvidia.com/gpu: 1
+          limits:
+            memory: "12Gi"
+            cpu: "2"
+            nvidia.com/gpu: 1
+      volumes:
+      - name: europeana-models
+        persistentVolumeClaim:
+          claimName: europeana-models
+        
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: europeana-service
+  namespace: ai-${ENV}
+spec:
+  selector:
+    app: europeana-service
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: europeana-service
+  namespace: ai-${ENV}
+spec:
+  ingressClassName: contour
+  rules:
+  - host: europeana-service.translatedlabs.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: europeana-service
+            port:
+              number: 80
+
+

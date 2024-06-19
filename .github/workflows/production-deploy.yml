@@ -1,0 +1,43 @@
+name: production-deploy
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: execute tests
+        run: echo Test ecexution ⚙️
+
+  deploy-production:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+          
+      - name: build and deploy
+        env:
+          ENV: production
+          SWARM_HOST: 156.54.237.240
+          AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          AWS_ACCOUNT_ID: ${{secrets.AWS_ACCOUNT_ID}}
+          AWS_REGION: eu-west-1
+          SWARM_PEM: ${{secrets.AI_PRODUCTION_PEM}}
+          SHAREPOINT_ID: ${{secrets.SHAREPOINT_ID}}
+          ECR_URI: ${{secrets.ECR_URI}}
+        run: |
+          eval `ssh-agent -s`
+          ssh-add - <<< "${SWARM_PEM}"
+          mkdir ~/.ssh
+          ssh-keyscan -p 2222 -H $SWARM_HOST >> ~/.ssh/known_hosts
+          apt-get update && apt-get install -y awscli
+          aws ecr get-login-password --region $AWS_REGION | docker login --username $AWS_USERNAME --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+          sh deploy.sh $ENV
