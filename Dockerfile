@@ -26,13 +26,16 @@ RUN pip install --no-cache-dir transformers==4.37.2 torch==2.0.1 torchaudio==2.0
 ENV VIRTUAL_ENV=/opt/env/fw
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$ORIG_PATH"
+RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir faster_whisper_cli==1.0.1 faster-whisper==0.10.0 ctranslate2==3.24.0
 # helsinki
 ENV VIRTUAL_ENV=/opt/env/helsinki
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$ORIG_PATH"
 RUN pip install --no-cache-dir --upgrade pip
-RUN pip install torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 transformers sentencepiece --index-url https://download.pytorch.org/whl/cu118
+RUN pip install torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 --index-url https://download.pytorch.org/whl/cu118
+RUN pip install --no-cache-dir transformers sentencepiece
+
 
 # Create app directory
 WORKDIR /FBK
