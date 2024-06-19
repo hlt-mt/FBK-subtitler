@@ -4,7 +4,7 @@ set -e
 export ENV=$1
 export NAME=$(jq -r .name package.json)
 export VERSION=$(jq -r .version package.json)
-export REGISTRY_NAMESPACE=$ECR_URI
+export REGISTRY_NAMESPACE=$REGISTRY
 export HASH=$(git rev-parse --short HEAD)
 
 # DOCKER_HOST="ssh://docker-deploy@10.40.1.15:2222"
