@@ -50,5 +50,8 @@ ENV SHAS_ROOT=/FBK/SHAS
 RUN mkdir -p /FBK/server/data
 COPY CMD.httpserver_start.sh httpserver.py /FBK/server/
 COPY data/. /FBK/server/data
+
+COPY entrypoint.sh /FBK/
+COPY download_models.sh /FBK/
 # run the command
 ENTRYPOINT ["entrypoint.sh"]
