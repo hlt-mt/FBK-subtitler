@@ -1,5 +1,4 @@
 #!/bin/sh
-echo "Deploying $NAME:$VERSION ($HASH) on $ENV"
 set -e
 
 export ENV=$1

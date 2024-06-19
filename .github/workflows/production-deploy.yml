@@ -48,5 +48,8 @@ jobs:
           eval `ssh-agent -s`
           ssh-add - <<< "${SWARM_PEM}"
           mkdir ~/.ssh
+          echo "ssh directory created"
           ssh-keyscan -p 2222 -H $SWARM_HOST >> ~/.ssh/known_hosts
+          echo "ssh key added"
+          echo "running deploy.sh $ENV"
           sh deploy.sh $ENV
