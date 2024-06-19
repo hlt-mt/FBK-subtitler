@@ -29,6 +29,9 @@ spec:
         app: europeana-service
     spec:
       runtimeClassName: nvidia
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: europeana-regcred
       containers:
       - name: europeana-service
         image: $IMAGE
