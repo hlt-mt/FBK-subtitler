@@ -10,4 +10,4 @@ if [ ! -d "models/FBK_data_$VERSION" ]; then
 fi
 echo "FBK_data_$VERSION downloaded"
 
-mv models/FBK_data_$VERSION/* root/.cache
+mv models/FBK_data_$VERSION/* /root/.cache
