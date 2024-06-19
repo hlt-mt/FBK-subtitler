@@ -25,12 +25,14 @@ RUN pip install --no-cache-dir transformers==4.37.2 torch==2.0.1 torchaudio==2.0
 ENV VIRTUAL_ENV=/opt/env/fw
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$ORIG_PATH"
+RUN pip install --no-cache-dir --upgrade pip
 RUN pip cache purge && pip install --no-cache-dir faster_whisper_cli faster-whisper ctranslate2==3.24.0
 # helsinki
 ENV VIRTUAL_ENV=/opt/env/helsinki
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$ORIG_PATH"
 ENV TMPDIR=/var/tmp
+RUN pip install --no-cache-dir --upgrade pip
 RUN TMPDIR=/var/tmp pip cache purge && pip install --cache-dir /var/tmp --build /var/tmp torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 --index-url https://download.pytorch.org/whl/cu118 && \
     TMPDIR=/var/tmp pip install --cache-dir /var/tmp --build /var/tmp fairseq==0.10.2 fastBPE==0.1.0 sentencepiece==0.1.96
 
