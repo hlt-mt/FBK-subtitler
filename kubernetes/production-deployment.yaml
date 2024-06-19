@@ -30,10 +30,12 @@ spec:
     spec:
       runtimeClassName: nvidia
       restartPolicy: Always
+      
       imagePullSecrets:
         - name: europeana-regcred
       containers:
       - name: europeana-service
+        imagePullPolicy: Always
         image: $IMAGE
         ports:
         - containerPort: 8080
