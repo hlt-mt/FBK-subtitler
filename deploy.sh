@@ -2,11 +2,12 @@
 set -e
 
 export ENV=$1
-export SKIP_BUILD=$2
 export NAME=$(jq -r .name package.json)
 export VERSION=$(jq -r .version package.json)
 export REGISTRY_NAMESPACE=$ECR_URI
 export HASH=$(git rev-parse --short HEAD)
+
+echo "Deploying $NAME:$VERSION ($HASH) on $ENV"
 
 # DOCKER_HOST="ssh://docker-deploy@10.40.1.15:2222"
 export IMAGE="$REGISTRY_NAMESPACE/$NAME:$VERSION"
