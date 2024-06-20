@@ -1,7 +1,7 @@
 FROM nvidia/cuda:11.4.3-cudnn8-runtime-ubuntu20.04
 ENV PYTHON_VERSION=3.9
+# this to prevent interactive intallation of 'ffmpeg'
 ENV DEBIAN_FRONTEND=noninteractive
-
 RUN apt-get -qq update \
     && apt-get -qq install --no-install-recommends \
     python${PYTHON_VERSION} \
@@ -10,8 +10,9 @@ RUN apt-get -qq update \
     python${PYTHON_VERSION}-dev build-essential \
     locales \
     ffmpeg \
-    && rm -rf /var/lib/apt/lists/* && \
-    ln -s -f /usr/bin/python${PYTHON_VERSION} /usr/bin/python3 && \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+RUN ln -s -f /usr/bin/python${PYTHON_VERSION} /usr/bin/python3 && \
     ln -s -f /usr/bin/python${PYTHON_VERSION} /usr/bin/python && \
     ln -s -f /usr/bin/pip3 /usr/bin/pip
 RUN locale-gen en_US.UTF-8 && update-locale LANG=en_US.UTF-8
@@ -32,8 +33,8 @@ ENV VIRTUAL_ENV=/opt/env/helsinki
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$ORIG_PATH"
 RUN pip install --no-cache-dir --upgrade pip
-RUN pip install torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 transformers sentencepiece --index-url https://download.pytorch.org/whl/cu118
-
+RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+RUN pip install --no-cache-dir transformers sentencepiece
 # Create app directory
 WORKDIR /FBK
 # Copy pipeline files
@@ -45,8 +46,9 @@ RUN mkdir -p /FBK/SHAS
 COPY SHAS/. /FBK/SHAS
 ENV SHAS_ROOT=/FBK/SHAS
 # Copy http server files
-RUN mkdir -p /FBK/server/data
 COPY CMD.httpserver_start.sh httpserver.py /FBK/server/
-COPY data/. /FBK/server/data
-# run the command
-ENTRYPOINT ["entrypoint.sh"]
+COPY data /FBK/server/data
+
+COPY entrypoint.sh /FBK/
+
+ENTRYPOINT bash /FBK/entrypoint.sh 

@@ -26,17 +26,19 @@ jobs:
         with:
             aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            aws-region: eu-central-1
+            aws-region: us-east-1
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-        
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: public
+
       - name: build and deploy
         env:
           ENV: production
           SWARM_HOST: 156.54.237.240
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REGISTRY: public.ecr.aws/k2u7h0h2
           AWS_REGION: eu-central-1
           SWARM_PEM: ${{secrets.AI_PRODUCTION_PEM}}
           SHAREPOINT_ID: ${{secrets.SHAREPOINT_ID}}
@@ -48,4 +50,10 @@ jobs:
           ssh-keyscan -p 2222 -H $SWARM_HOST >> ~/.ssh/known_hosts
           echo "ssh key added"
           echo "running deploy.sh $ENV"
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          echo "Free space:"
+          df -h
           sh deploy.sh $ENV

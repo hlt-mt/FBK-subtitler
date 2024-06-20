@@ -29,9 +29,20 @@ spec:
         app: europeana-service
     spec:
       runtimeClassName: nvidia
+      restartPolicy: Always
+
+      imagePullSecrets:
+        - name: europeana-regcred
       containers:
       - name: europeana-service
-        image: $IMAGE
+        env:
+        - name: SHAREPOINT_ID
+          valueFrom:
+            secretKeyRef:
+              name: europeana-service
+              key: SHAREPOINT_ID
+        imagePullPolicy: Always
+        image: "$IMAGE"
         ports:
         - containerPort: 8080
         volumeMounts:
@@ -76,6 +87,10 @@ metadata:
   namespace: ai-${ENV}
 spec:
   ingressClassName: contour
+  tls:
+  - hosts:
+    - europeana-service.translatedlabs.com
+    secretName: translatedlabs.com
   rules:
   - host: europeana-service.translatedlabs.com
     http:
