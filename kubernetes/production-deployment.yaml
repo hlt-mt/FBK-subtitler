@@ -30,19 +30,19 @@ spec:
     spec:
       runtimeClassName: nvidia
       restartPolicy: Always
-      env:
-      - name: SHAREPOINT_ID
-        valueFrom:
-          secretKeyRef:
-            name: europeana-service
-            key: SHAREPOINT_ID
 
       imagePullSecrets:
         - name: europeana-regcred
       containers:
       - name: europeana-service
+        env:
+        - name: SHAREPOINT_ID
+          valueFrom:
+            secretKeyRef:
+              name: europeana-service
+              key: SHAREPOINT_ID
         imagePullPolicy: Always
-        image: $IMAGE
+        image: "$IMAGE"
         ports:
         - containerPort: 8080
         volumeMounts:
