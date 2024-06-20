@@ -36,7 +36,7 @@ spec:
           secretKeyRef:
             name: europeana-service
             key: SHAREPOINT_ID
-            
+
       imagePullSecrets:
         - name: europeana-regcred
       containers:
@@ -87,6 +87,10 @@ metadata:
   namespace: ai-${ENV}
 spec:
   ingressClassName: contour
+  tls:
+  - hosts:
+    - europeana-service.translatedlabs.com
+    secretName: translatedlabs.com
   rules:
   - host: europeana-service.translatedlabs.com
     http:
