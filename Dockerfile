@@ -1,5 +1,6 @@
 FROM nvidia/cuda:11.4.3-cudnn8-runtime-ubuntu20.04
 ENV PYTHON_VERSION=3.9
+# this to prevent interactive intallation of 'ffmpeg'
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get -qq update \
     && apt-get -qq install --no-install-recommends \
@@ -9,8 +10,9 @@ RUN apt-get -qq update \
     python${PYTHON_VERSION}-dev build-essential \
     locales \
     ffmpeg \
-    && rm -rf /var/lib/apt/lists/* && \
-    ln -s -f /usr/bin/python${PYTHON_VERSION} /usr/bin/python3 && \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+RUN ln -s -f /usr/bin/python${PYTHON_VERSION} /usr/bin/python3 && \
     ln -s -f /usr/bin/python${PYTHON_VERSION} /usr/bin/python && \
     ln -s -f /usr/bin/pip3 /usr/bin/pip
 RUN locale-gen en_US.UTF-8 && update-locale LANG=en_US.UTF-8
@@ -25,17 +27,14 @@ RUN pip install --no-cache-dir transformers==4.37.2 torch==2.0.1 torchaudio==2.0
 ENV VIRTUAL_ENV=/opt/env/fw
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$ORIG_PATH"
-RUN pip install --no-cache-dir --upgrade pip
-RUN pip cache purge && pip install --no-cache-dir faster_whisper_cli faster-whisper ctranslate2==3.24.0
+RUN pip install --no-cache-dir faster_whisper_cli==1.0.1 faster-whisper==0.10.0 ctranslate2==3.24.0
 # helsinki
 ENV VIRTUAL_ENV=/opt/env/helsinki
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$ORIG_PATH"
-ENV TMPDIR=/var/tmp
 RUN pip install --no-cache-dir --upgrade pip
-RUN TMPDIR=/var/tmp pip cache purge && pip install --cache-dir /var/tmp torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 --index-url https://download.pytorch.org/whl/cu118 && \
-    TMPDIR=/var/tmp pip install --cache-dir /var/tmp fairseq==0.10.0 fastBPE==0.1.0 sentencepiece==0.1.96
-
+RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+RUN pip install --no-cache-dir transformers sentencepiece
 # Create app directory
 WORKDIR /FBK
 # Copy pipeline files
@@ -52,6 +51,5 @@ COPY CMD.httpserver_start.sh httpserver.py /FBK/server/
 COPY data/. /FBK/server/data
 
 COPY entrypoint.sh /FBK/
-COPY download_models.sh /FBK/
-# run the command
-ENTRYPOINT ["entrypoint.sh"]
+
+ENTRYPOINT bash /FBK/entrypoint.sh 
