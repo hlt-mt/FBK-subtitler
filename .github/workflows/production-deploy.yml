@@ -38,7 +38,7 @@ jobs:
         env:
           ENV: production
           SWARM_HOST: 156.54.237.240
-          REGISTRY: public.ecr.aws/k2u7h0h2/
+          REGISTRY: public.ecr.aws/k2u7h0h2
           AWS_REGION: eu-central-1
           SWARM_PEM: ${{secrets.AI_PRODUCTION_PEM}}
           SHAREPOINT_ID: ${{secrets.SHAREPOINT_ID}}
