@@ -46,9 +46,8 @@ RUN mkdir -p /FBK/SHAS
 COPY SHAS/. /FBK/SHAS
 ENV SHAS_ROOT=/FBK/SHAS
 # Copy http server files
-RUN mkdir -p /FBK/server/data
 COPY CMD.httpserver_start.sh httpserver.py /FBK/server/
-COPY data/. /FBK/server/data
+COPY data /FBK/server/data
 
 COPY entrypoint.sh /FBK/
 
