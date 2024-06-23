@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 
 
-# ------------------------------------------------------
-# $Id: httpserver.py,v 1.8 2023/09/21 14:26:42 cattoni Exp $
-# ------------------------------------------------------
-
-
 def debug(msg):
     global DebugFlag
     if DebugFlag:
@@ -293,6 +288,7 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     # return True:
     #   (1) if it is the first time request (no id or id==0) or
     #   (2) if the last project has been finished
+    #   (3) if there is no state (state == "unknown")
     def check_availability_for_new_project(self):
         cntF = f'{RootDir}/sys/cnt.txt'
         if not os.path.exists(cntF):
@@ -312,8 +308,9 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         state = self.get_state(id)
         if state == "ready" or state == "fail":
             return True
-        else:
-            return False
+        if state == "unknown":
+            return True
+        return False
 
 
 Port      = 8080
