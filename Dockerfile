@@ -22,18 +22,18 @@ ENV VIRTUAL_ENV=/opt/env/shas
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$ORIG_PATH"
 RUN pip install --no-cache-dir --upgrade pip
-RUN pip install --no-cache-dir transformers==4.37.2 torch==2.0.1 torchaudio==2.0.2 pandas tqdm numpy sacrebleu sacremoses webrtcvad pydub wandb SoundFile PyYAML scikit_learn tweepy
+RUN pip install --no-cache-dir numpy==1.26.4 transformers==4.37.2 torch==2.0.1 torchaudio==2.0.2 pandas tqdm numpy sacrebleu sacremoses webrtcvad pydub wandb SoundFile PyYAML scikit_learn tweepy 
 # faster-whisper
 ENV VIRTUAL_ENV=/opt/env/fw
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$ORIG_PATH"
-RUN pip install --no-cache-dir faster_whisper_cli==1.0.1 faster-whisper==0.10.0 ctranslate2==3.24.0
+RUN pip install --no-cache-dir numpy==1.26.4 faster_whisper_cli==1.0.1 faster-whisper==0.10.0 ctranslate2==3.24.0
 # helsinki
 ENV VIRTUAL_ENV=/opt/env/helsinki
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$ORIG_PATH"
 RUN pip install --no-cache-dir --upgrade pip
-RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+RUN pip install --no-cache-dir numpy==1.24.1 torch==2.2.1+cu118 torchvision==0.17.1+cu118 torchaudio==2.2.1+cu118 --index-url https://download.pytorch.org/whl/cu118
 RUN pip install --no-cache-dir transformers sentencepiece
 # Create app directory
 WORKDIR /FBK

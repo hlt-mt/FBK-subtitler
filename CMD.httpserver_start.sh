@@ -24,14 +24,14 @@ then
   fi
 fi
 
-date > $log
-echo python3 -u $exe "$@"  >>$log
-python3 -u $exe "$@" 1>>$log 2>&1 & 
+date | tee $log
+echo python3 -u $exe "$@"  | tee -a $log
+python3 -u $exe "$@" 2>&1  | tee -a $log & 
 echo $! > $pidF 
 printf "."
 sleep 2
 
-check_running || { echo ERROR: startup failed, check $log file ; exit 2 ; }
+check_running || { echo ERROR: startup failed ; exit 2 ; }
 
 while ! grep '^web service ready at port ' $log &>/dev/null
 do

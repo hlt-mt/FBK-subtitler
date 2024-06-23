@@ -10,6 +10,6 @@ if [ ! -d "models/FBK_data_$VERSION" ]; then
 fi
 echo "FBK_data_$VERSION downloaded"
 echo "Creating upload and out directories"
-mkdir /FBK/server/upload mkdir /FBK/server/out
+mkdir /FBK/server/data/upload /FBK/server/data/out
 echo "Starting the server"
 bash /FBK/server/CMD.httpserver_start.sh
