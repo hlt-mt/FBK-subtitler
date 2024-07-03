@@ -105,6 +105,8 @@ kind: Ingress
 metadata:
   name: europeana-service
   namespace: keda
+  annotations:
+    projectcontour.io/response-timeout: "60s"
 spec:
   ingressClassName: contour
   tls:
