@@ -93,7 +93,7 @@ spec:
       deployment: europeana-service
       service: europeana-service
       port: 80
-    scaledownPeriod: 300
+    scaledownPeriod: 1800
     replicas:
       min: 0
       max: 1
