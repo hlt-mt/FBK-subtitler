@@ -61,7 +61,7 @@ spec:
       - name: europeana-models
         persistentVolumeClaim:
           claimName: europeana-models
-        
+
 ---
 
 apiVersion: v1
@@ -77,6 +77,24 @@ spec:
       port: 80
       targetPort: 8080
   type: LoadBalancer
+
+---
+# http scaling (can scale to 0)
+kind: HTTPScaledObject
+apiVersion: http.keda.sh/v1alpha1
+metadata:
+  name: europeana-service-scaledobject
+  namespace: ai-${ENV}
+spec:
+  host: europeana-service.translatedlabs.com
+  targetPendingRequests: 10
+  scaleTargetRef:
+      deployment: europeana-service
+      service: europeana-service
+      port: 80
+  replicas:
+      min: 0
+      max: 1
 
 ---
 
@@ -99,7 +117,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: europeana-service
+            name: keda-add-ons-http-interceptor-proxy
             port:
               number: 80
 
