@@ -87,7 +87,7 @@ metadata:
   namespace: ai-${ENV}
 spec:
   host: europeana-service.translatedlabs.com
-  targetPendingRequests: 10
+  targetPendingRequests: 1
   scaleTargetRef:
       deployment: europeana-service
       service: europeana-service
