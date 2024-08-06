@@ -50,6 +50,26 @@ def shell_exec_background(cmd, stdin=None, stdout=subprocess.PIPE, stderr=subpro
 
 class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
+    htIdAudioname = dict()
+
+    @classmethod
+    def getAudionameFromId(cls, id):
+        id = int(id)
+        if id in cls.htIdAudioname:
+            return(cls.htIdAudioname[id])
+        else:
+            return("")
+
+    @classmethod
+    def setAudionameFromId(cls, id, audioname):
+        id = int(id)
+        cls.htIdAudioname[id] = audioname
+
+    @classmethod
+    def print_htIdAudioname(cls):
+        debug(f'  htIdAudioname {cls.htIdAudioname}')
+
+
     def do_GET(self):        
         debug(f'do_GET {self.client_address}, {self.path}')
         parsed_path = urllib.parse.urlparse(self.path)
@@ -94,6 +114,28 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_reply(400, info)
                 return
             self.send_srt_file(srt_file)
+            return
+        elif re.search("_dbg_get_audio", parsed_path.path, re.IGNORECASE):
+            # serve the audio of the subtitles project with given id
+            if not "id" in query_parameters:
+                info = 'missing mandatory attribute id'
+                self.send_reply(400, info)
+                return
+            id = query_parameters['id'][0]
+            state = self.get_state(id)
+            if state == "unknown":
+                info = f'no subtitles projects for id {id}'
+                self.send_reply(400, info)
+                return
+            #
+            audio_name = self.getAudionameFromId(id)
+            self.print_htIdAudioname()
+            audio_file = f'{RootDir}/upload/{audio_name}'
+            if not os.path.exists(audio_file):
+                info = f'cannot find audio {audio_file} for id {id}'
+                self.send_reply(400, info)
+                return
+            self.send_audio_file(audio_file)
             return
         else:
             info = f'unknown GET path {self.path}'
@@ -203,7 +245,9 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                         if not chunk:
                             break
                         fp.write(chunk)
-                # 
+                self.setAudionameFromId(id, item.filename) 
+                self.print_htIdAudioname()
+                #
                 return (200, "ok", {"path":      self.path,
                                     "source":    source, 
                                     "target":    target,
@@ -244,6 +288,14 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         with open(srt_file, 'rb') as f: 
             self.wfile.write(f.read())
         debug(f'sent txt/srt file {srt_file}')
+
+    def send_audio_file(self, audio_file):
+        self.send_response(200)
+        self.send_header('Content-type', 'audio/wav')
+        self.end_headers()
+        with open(audio_file, 'rb') as f: 
+            self.wfile.write(f.read())
+        debug(f'sent wav file {audio_file}')
 
     def rm_file(self, path):
         try:
