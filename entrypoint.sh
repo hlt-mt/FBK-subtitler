@@ -17,4 +17,5 @@ echo "FBK_data_$VERSION downloaded"
 echo "Creating upload and out directories"
 mkdir /FBK/server/data/upload /FBK/server/data/out
 echo "Starting the server"
-bash /FBK/server/CMD.httpserver_start.sh
+bash /FBK/server/CMD.httpserver_start.sh -d
+
