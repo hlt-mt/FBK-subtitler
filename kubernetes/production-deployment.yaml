@@ -48,6 +48,8 @@ spec:
         volumeMounts:
         - name: europeana-models
           mountPath: /root/.cache
+        - name: shm
+          mountPath: /dev/shm
         resources:
           requests:
             memory: "10Gi"
@@ -61,6 +63,10 @@ spec:
       - name: europeana-models
         persistentVolumeClaim:
           claimName: europeana-models
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: 8Gi
 
 ---
 
