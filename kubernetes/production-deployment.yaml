@@ -91,7 +91,7 @@ spec:
   metadata:
     name: europeana-service-scaledobject
     namespace: ai-${ENV}
-    resourceVersion: "64285015"
+    resourceVersion: "64285016"
   spec:
     hosts: 
       - europeana-service.translatedlabs.com
