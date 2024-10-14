@@ -84,36 +84,13 @@ spec:
       targetPort: 8080
   type: LoadBalancer
 
----
-# http scaling (can scale to 0)
-  kind: HTTPScaledObject
-  apiVersion: http.keda.sh/v1alpha1
-  metadata:
-    name: europeana-service-scaledobject
-    namespace: ai-${ENV}
-    resourceVersion: "64285015"
-  spec:
-    hosts: 
-      - europeana-service.translatedlabs.com
-    targetPendingRequests: 1
-    scaleTargetRef:
-      deployment: europeana-service
-      service: europeana-service
-      port: 80
-    scaledownPeriod: 1800
-    replicas:
-      min: 1
-      max: 1
-
 --- 
 
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: europeana-service
-  namespace: keda
-  annotations:
-    projectcontour.io/response-timeout: "60s"
+  namespace: ai-${ENV}
 spec:
   ingressClassName: contour
   tls:
@@ -128,8 +105,8 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: keda-add-ons-http-interceptor-proxy
+            name: europeana-service
             port:
-              number: 8080
+              number: 80
 
 
