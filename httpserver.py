@@ -283,7 +283,7 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.send_reply(200, info)
 
     def deal_post_data(self):
-        global ExeCascade, ExeDirect
+        global ExeCascade, ExeDirect, ExeTranscribe
         form = cgi.FieldStorage(
             fp=self.rfile, 
             headers=self.headers,
@@ -326,6 +326,9 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 exe = ExeDirect
             elif (re.match('en', source) and re.match('(de|es|it|nl|ro)', target)):
                 exe = ExeCascade
+            elif (re.match('(de|el|es|it|nl|ro|sl)', source) and
+                  (target == source)):
+                exe = ExeTranscribe
             else:
                 return (400, f'unsupported language pair {source}-{target}', {})
             
@@ -450,6 +453,7 @@ if args.checkSeconds:
 print(f'  DebugFlag {DebugFlag}, CheckSecs {CheckSecs}, Port {Port}, RootDir {RootDir}')
 ExeCascade = f'{RootDir}/../../srv_pipeline_cascade.sh'
 ExeDirect  = f'{RootDir}/../../srv_pipeline_direct.sh'
+ExeTranscribe  = f'{RootDir}/../../srv_pipeline_transcribe.sh'
 
 if __name__ == '__main__':
     try:

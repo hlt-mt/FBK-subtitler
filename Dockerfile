@@ -38,7 +38,7 @@ RUN pip install --no-cache-dir transformers sentencepiece
 # Create app directory
 WORKDIR /FBK
 # Copy pipeline files
-COPY srv_pipeline_cascade.sh srv_pipeline_direct.sh /FBK/
+COPY srv_pipeline_cascade.sh srv_pipeline_direct.sh srv_pipeline_transcribe.sh /FBK/
 RUN mkdir -p /FBK/scripts
 COPY scripts/. /FBK/scripts
 # Copy and set SHAS files & env
