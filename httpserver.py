@@ -25,12 +25,15 @@ import urllib.parse
 import re
 import random
 import signal
+import threading
+
+
 
 # to avoid children processes created by subprocess remain zombie
 signal.signal(signal.SIGCHLD, signal.SIG_IGN)
 
 def shell_exec_background(cmd, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=None):
-    print(f'ROL-1 shell_exec_background {cmd} {stdin} {stdout} {stderr}')
+    debug(f'shell_exec_background {cmd} {stdin} {stdout} {stderr}')
     str_cmd = cmd if isinstance(cmd, str) else ' '.join(cmd)
     #
     message = None
@@ -50,26 +53,140 @@ def shell_exec_background(cmd, stdin=None, stdout=subprocess.PIPE, stderr=subpro
 
 class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
-    htIdAudioname = dict()
+    # possible values are
+    #   "todo" (to be processed), "running" (in process),
+    #   "ready" (processed ok, SRT ready),
+    #   "fail" (processed with problems), "unknown"
+    #
+    @classmethod
+    def get_state_file(cls, id):
+        stateF = f'{RootDir}/sys/{id}.state'
+        try:
+            with open(stateF) as fin:
+                state = fin.readline().rstrip()
+        except FileNotFoundError:
+            state = "unknown"
+        except Exception:
+            state = "unknown"
+        return state
+
+    @classmethod
+    def get_random_state(cls, id):
+        # generate a randome state
+        stateDict = {0: "todo", 1: "running", 2: "ready",
+                     3: "fail", 4: "unknown"}
+        ri = random.randint(0, 3)            
+        state = stateDict[ri]
+        return state
+
+    @classmethod
+    def set_state_file(cls, id, value):
+        stateF = f'{RootDir}/sys/{id}.state'
+        try:
+            with open(stateF, "w") as fout:
+                fout.write('%s\n' % value)
+            res = True
+        except Exception:
+            res = False
+        return res
+
+    
+    # the hash of id and related info (audioname, src, tgt, status)
+    htIdTask = dict()
 
     @classmethod
     def getAudionameFromId(cls, id):
         id = int(id)
-        if id in cls.htIdAudioname:
-            return(cls.htIdAudioname[id])
+        if id in cls.htIdTask:
+            return(cls.htIdTask[id]["audioname"])
         else:
             return("")
 
     @classmethod
-    def setAudionameFromId(cls, id, audioname):
+    def setTaskFromId(cls, id, audioname, src, tgt, state, exe):
         id = int(id)
-        cls.htIdAudioname[id] = audioname
+        cls.htIdTask[id] = {
+            "audioname": audioname,
+            "src": src, "tgt": tgt,
+            "state": state, "exe": exe
+        }
 
     @classmethod
-    def print_htIdAudioname(cls):
-        debug(f'  htIdAudioname {cls.htIdAudioname}')
+    def print_htIdTask(cls):
+        debug(f'  htIdTask {cls.htIdTask}')
+    
+    @classmethod
+    def updateHtIdTaskWrtStateFiles(cls):
+        for id in cls.htIdTask:
+            stateT = cls.htIdTask[id]["state"]
+            stateF = cls.get_state_file(id)
+            if stateF != stateT :
+                cls.htIdTask[id]["state"] = stateF
+                debug(f'  updateHtIdTaskWrtStateFiles: {id} {stateT} {stateF}')
+    
+    
+    @classmethod
+    def bgCheckAndActivatePipeline(cls):
+        global CheckSecs, RootDir, DebugFlag
+        #
+        # 1) read the state files and if there are "ready" states then
+        #    update the corresponding task state
+        cls.updateHtIdTaskWrtStateFiles()
+        # 
+        # 2) check if there is a todo task AND (2) no running tasks
+        #    if yes then
+        #      - start the first todo task
+        #      - update its (both task and file) state to "running"
+        #
+        # find the first todo task
+        todoTaskId     = None
+        for id in sorted(cls.htIdTask):
+            state = cls.htIdTask[id]["state"]
+            if not todoTaskId and state.lower() == "todo":
+                todoTaskId = id
+                break
+        # find the first running task
+        runningTaskId  = None
+        for id in sorted(cls.htIdTask):
+            state = cls.htIdTask[id]["state"]
+            if state.lower() == "running":
+                runningTaskId = id
+                break
+        # check
+        if todoTaskId:
+            if not runningTaskId:
+                debug(f'  starting todoTaskId {todoTaskId} (no running tasks)')
+                task   = cls.htIdTask[todoTaskId]
+                aName  = task["audioname"]
+                audioF   = f'{RootDir}/upload/{aName}'
+                src      = task["src"]
+                tgt      = task["tgt"]
+                outSrtF  = f'{RootDir}/out/{todoTaskId}.srt'
+                stateF   = f'{RootDir}/sys/{todoTaskId}.state'
+                #
+                exe      = task["exe"]
+                logOut   = f'{RootDir}/../../pipeline.LOG.out'
+                logErr   = f'{RootDir}/../../pipeline.LOG.err'
+
+                # args: audioF src tgt outSrtF, stateF 1> logOut 2> logErr
+                cmd = [exe, audioF, src, tgt, outSrtF, stateF]
+                if DebugFlag:
+                    cmd.append("-d")
+                with open(logOut, "w") as fout:
+                    with open (logErr, "w") as ferr:
+                        shell_exec_background(cmd, stdout=fout, stderr=ferr)
+                
+                # update stateT and stateF to "running"
+                state = "running"
+                cls.htIdTask[todoTaskId]["state"] = state
+                cls.set_state_file(todoTaskId, state)
+                debug(f'  started todoTaskId {todoTaskId}')
+                cls.print_htIdTask()
+        #
+        threading.Timer(CheckSecs, cls.bgCheckAndActivatePipeline).start()
 
 
+        
     def do_GET(self):        
         debug(f'do_GET {self.client_address}, {self.path}')
         parsed_path = urllib.parse.urlparse(self.path)
@@ -85,11 +202,7 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_reply(400, info)
                 return
             id = query_parameters['id'][0]
-            state = self.get_state(id)
-            ### generate a randome state
-            ## stateDict = {0: "ready", 1: "processing", 2: "fail", 3: "unknown"}
-            ## ri = random.randint(0, 3)            
-            ## state = stateDict[ri]
+            state = self.get_state_file(id)
             info = {"id": id, "state": state}
             self.send_reply(200, info)
             return
@@ -100,7 +213,7 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_reply(400, info)
                 return
             id = query_parameters['id'][0]
-            state = self.get_state(id)
+            state = self.get_state_file(id)
             if state != "ready":
                 info = f'state for id {id} is {state} (not ready)'
                 self.send_reply(400, info)
@@ -109,7 +222,7 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             srt_file = f'{RootDir}/out/{id}.srt'
             if not os.path.exists(srt_file):
                 state = "fail"
-                self.set_state(state)
+                self.set_state_file(state)
                 info = f'state for id {id} is {state}'
                 self.send_reply(400, info)
                 return
@@ -122,14 +235,14 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_reply(400, info)
                 return
             id = query_parameters['id'][0]
-            state = self.get_state(id)
+            state = self.get_state_file(id)
             if state == "unknown":
                 info = f'no subtitles projects for id {id}'
                 self.send_reply(400, info)
                 return
             #
             audio_name = self.getAudionameFromId(id)
-            self.print_htIdAudioname()
+            self.print_htIdTask()
             audio_file = f'{RootDir}/upload/{audio_name}'
             if not os.path.exists(audio_file):
                 info = f'cannot find audio {audio_file} for id {id}'
@@ -161,21 +274,9 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             audiofile = pars["audiofile"]
             id = pars["id"]
             exe = pars["exe"]
-            # call the pipeline
-            log_out = f'{RootDir}/../../pipeline.LOG.out'
-            log_err = f'{RootDir}/../../pipeline.LOG.err'
-            in_wav  = f'{RootDir}/{audiofile}'
-            out_srt = f'{RootDir}/out/{id}.srt'
-            state_file = f'{RootDir}/sys/{id}.state'
-            with open(log_out, "w") as fout:
-                with open (log_err, "w") as ferr:
-                    # inputWav sourceLanguage targetLanguage outSrt
-                    cmd = [exe, in_wav, source, target, out_srt, state_file]
-                    if DebugFlag:
-                        cmd.append("-d")
-                    shell_exec_background(cmd, stdout=fout, stderr=ferr)
             #
-            self.set_state(id, "running")
+            state = "todo"
+            self.set_state_file(id, state)
             #
             ## self.rm_file(audiofile)
             info = {"id": id, "audiofile": audiofile}
@@ -237,16 +338,18 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 item = form[field]
                 if not item.file:
                     return (500, f'problems in uploading {field}', {})
-                saved_file_path = f'./upload/{item.filename}'
                 id = self.get_new_id();
+                fName = f'{id}_{item.filename}'
+                saved_file_path = f'./upload/{fName}'
                 with open(saved_file_path, 'wb') as fp:
                     while True:
                         chunk = item.file.read(100000)
                         if not chunk:
                             break
                         fp.write(chunk)
-                self.setAudionameFromId(id, item.filename) 
-                self.print_htIdAudioname()
+                state = "todo"
+                self.setTaskFromId(id, fName, source, target, state, exe) 
+                self.print_htIdTask()
                 #
                 return (200, "ok", {"path":      self.path,
                                     "source":    source, 
@@ -316,64 +419,24 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             id = 1
         return id
 
-    def get_state(self, id):
-        stateF = f'{RootDir}/sys/{id}.state'
-        try:
-            with open(stateF) as fin:
-                state = fin.readline().rstrip()
-        except FileNotFoundError:
-            state = "unknown"
-        except Exception:
-            state = "processing"
-        return state
 
-    def set_state(self, id, value):
-        stateF = f'{RootDir}/sys/{id}.state'
-        try:
-            with open(stateF, "w") as fout:
-                fout.write('%s\n' % value)
-            res = True
-        except Exception:
-            res = False
-        return res
-
-    # return True:
-    #   (1) if it is the first time request (no id or id==0) or
-    #   (2) if the last project has been finished
-    #   (3) if there is no state (state == "unknown")
+    # always return True
+    #
     def check_availability_for_new_project(self):
-        cntF = f'{RootDir}/sys/cnt.txt'
-        if not os.path.exists(cntF):
-            return True
-        #
-        id = 0
-        try:
-            with open(cntF) as fin:
-                line = fin.readline()
-                id = int(line)
-        except Exception:
-            return False
-        #
-        if id == 0:
-            return True
-        #
-        state = self.get_state(id)
-        if state == "ready" or state == "fail":
-            return True
-        if state == "unknown":
-            return True
-        return False
+        return True
 
 
 Port      = 8080
 RootDir   = os.path.abspath(os.path.dirname(__file__)) + "/data"
 DebugFlag = False
+CheckSecs = 10.0
 
 parser = argparse.ArgumentParser()
 # (optional) args
 parser.add_argument("-d", "--debug", action="store_true", help="enable debug")
 parser.add_argument("-p", "--port", type=int, help=f"the port to accept connections (default {Port})")
 parser.add_argument("-r", "--rootPath", help=f"the path of the directory where to read/write files {RootDir})")
+parser.add_argument("-c", "--checkSeconds", type=float, help=f"the seconds two sleep before checking task state changes (default {CheckSecs})")
 args = parser.parse_args()
 
 DebugFlag    = args.debug
@@ -381,12 +444,18 @@ if args.port:
     Port   = args.port
 if args.rootPath:
     RootDir = args.rootPath
+if args.checkSeconds:
+    CheckSecs = args.checkSeconds
 
+print(f'  DebugFlag {DebugFlag}, CheckSecs {CheckSecs}, Port {Port}, RootDir {RootDir}')
 ExeCascade = f'{RootDir}/../../srv_pipeline_cascade.sh'
 ExeDirect  = f'{RootDir}/../../srv_pipeline_direct.sh'
 
 if __name__ == '__main__':
     try:
+        # start the background activity
+        CustomHTTPRequestHandler.bgCheckAndActivatePipeline()
+        
         # start the web server
         os.chdir(RootDir)
         Handler = CustomHTTPRequestHandler
