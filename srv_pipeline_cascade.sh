@@ -13,6 +13,24 @@ wDir=$(cd $(dirname $0) ; pwd)
 maxCharacters=40
 maxLines=2
 
+function fail_exit() {
+    stateFile=$1
+    outSrt=$2
+    
+    # write stateFile
+    echo fail > $stateFile
+    
+    # write empty srt
+    cat - <<EOF > $outSrt
+1
+00:00:00,000 --> 00:00:01,000
+EMPTY_SUBTITLES
+
+EOF
+    exit 1
+}
+
+
 function translateWithHelsinkiWrapper() {
     sl=$1
     tl=$2
@@ -70,7 +88,7 @@ args:
   stateFile $stateFile
 EOF
 
-test -f $wav || { echo cannot find wav $wav ; exit 1 ; }
+test -f $wav || { echo cannot find wav $wav ; fail_exit $stateFile $outSrt ; }
 case $src in
   en|es|fr|it|pt)
       prefix=$src
@@ -80,18 +98,18 @@ case $src in
       ;;
 esac
 ckpt=$HOME/.cache/shas/${prefix}.checkpoint
-test -f $ckpt || { echo cannot find chkpt $ckpt ; exit 1 ; }
+test -f $ckpt || { echo cannot find chkpt $ckpt ; fail_exit $stateFile $outSrt ; }
 
 _dd=$(dirname $outSrt)
-test -d $_dd || { echo cannot find directory of $outSrt ; exit 1 ; }
-test -w $_dd || { echo directory of $outSrt is not writable ; exit 1 ; }
+test -d $_dd || { echo cannot find directory of $outSrt ; fail_exit $stateFile $outSrt ; }
+test -w $_dd || { echo directory of $outSrt is not writable ; fail_exit $stateFile $outSrt ; }
 unset _dd
 
 if ! test -z "$logDir"
 then
   _dd=$(dirname $logDir)
-  test -d $_dd || { echo cannot find directory of $logDir ; exit 1 ; }
-  test -w $_dd || { echo directory of $logDir is not writable ; exit 1 ; }
+  test -d $_dd || { echo cannot find directory of $logDir ; fail_exit $stateFile $outSrt ; }
+  test -w $_dd || { echo directory of $logDir is not writable ; fail_exit $stateFile $outSrt ; }
   unset _dd
 fi
 
@@ -112,7 +130,7 @@ exe10=$scriptDir/splitSentences4matesub_naive.pl
 
 for f in $exe1 $exe2 $exe4_1 $exe4_2 $exe4_3 $exe5 $exe6 $exe7 $exe8 $exe9 $exe10
 do
-  test -f $f || { echo cannot find exe $f ; exit 1 ; }
+  test -f $f || { echo cannot find exe $f ; fail_exit $stateFile $outSrt ; }
 done
 
 echo run $0 on $(uname -n) ; echo
