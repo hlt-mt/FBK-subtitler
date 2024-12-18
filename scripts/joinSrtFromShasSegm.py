@@ -149,7 +149,8 @@ def main(args):
                 totSubtract += bSub
                 if not firstBlockFlag:
                     newBI["start"] = startS - totSubtract
-                newBI["end"]   = endS - totSubtract
+                if (endS - totSubtract) > 0 :
+                    newBI["end"]   = endS - totSubtract
                 newBlockL.append(newBI)
                 firstBlockFlag = False
             # 2) fix startT if < the previous endT
