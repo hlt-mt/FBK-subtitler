@@ -203,6 +203,8 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 return
             id = query_parameters['id'][0]
             state = self.get_state_file(id)
+            if state.lower() == "todo" or state.lower() == "running":
+                state = "processing"
             info = {"id": id, "state": state}
             self.send_reply(200, info)
             return
