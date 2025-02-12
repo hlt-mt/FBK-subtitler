@@ -123,6 +123,8 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             if stateF != stateT :
                 cls.htIdTask[id]["state"] = stateF
                 debug(f'  updateHtIdTaskWrtStateFiles: {id} {stateT} {stateF}')
+                if stateF.lower() == "ready":
+                    cls.debugPipelineLogs()
     
     
     @classmethod
@@ -185,6 +187,22 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         #
         threading.Timer(CheckSecs, cls.bgCheckAndActivatePipeline).start()
 
+
+    @classmethod
+    def debugPipelineLogs(cls):
+        global RootDir, DebugFlag
+        #
+        logOut   = f'{RootDir}/../../pipeline.LOG.out'
+        logErr   = f'{RootDir}/../../pipeline.LOG.err'
+
+        if DebugFlag:
+            print(f'**** {logOut} ****')
+            with open(logOut) as f:
+                print(f.read())
+            debug(f'**** {logErr} ****')
+            with open(logErr) as f:
+                print(f.read())
+            print(f'********')
 
         
     def do_GET(self):        
