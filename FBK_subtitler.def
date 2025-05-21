@@ -1,0 +1,94 @@
+Bootstrap: docker
+From: nvidia/cuda:11.4.3-cudnn8-runtime-ubuntu20.04
+
+
+%setup
+    mkdir ${SINGULARITY_ROOTFS}/FBK
+
+
+%files
+    # Copy SHAS files and directories
+    ./input/SHAS /FBK/SHAS
+    ./input/scripts /FBK/scripts
+    ./input/CMD.httpserver_start.sh /FBK/server/
+    ./input/httpserver.py /FBK/server/
+    ./input/srv_pipeline_* /FBK/
+
+
+%environment
+    export SHAS_ROOT=/FBK/SHAS
+    export CACHE_PATH=/FBK/.cache
+
+
+%post -c /bin/bash
+    PYTHON_VERSION=3.9
+    apt-get -y update
+    DEBIAN_FRONTEND="noninteractive" TZ="Europe/London" apt-get -y install tzdata python${PYTHON_VERSION} python${PYTHON_VERSION}-venv python3-pip python${PYTHON_VERSION}-dev build-essential locales ffmpeg wget && rm -rf /var/lib/apt/lists/*
+    ln -s -f /usr/bin/python${PYTHON_VERSION} /usr/bin/python3 && ln -s -f /usr/bin/python${PYTHON_VERSION} /usr/bin/python && ln -s -f /usr/bin/pip3 /usr/bin/pip
+    locale-gen en_US.UTF-8 && update-locale LANG=en_US.UTF-8
+    ORIG_PATH=$PATH
+    # shas
+    VIRTUAL_ENV=/opt/env/shas
+    python -m venv $VIRTUAL_ENV
+    PATH="$VIRTUAL_ENV/bin:$ORIG_PATH"
+    pip install --no-cache-dir --upgrade pip
+    pip install --no-cache-dir numpy==1.26.4 transformers==4.37.2 torch==2.0.1 torchaudio==2.0.2 pandas tqdm numpy sacrebleu sacremoses webrtcvad pydub wandb SoundFile PyYAML scikit_learn tweepy
+    # faster-whisper
+    VIRTUAL_ENV=/opt/env/fw
+    python -m venv $VIRTUAL_ENV
+    PATH="$VIRTUAL_ENV/bin:$ORIG_PATH"
+    pip install --no-cache-dir numpy==1.26.4 faster_whisper_cli==1.0.1 faster-whisper==0.10.0 ctranslate2==3.24.0
+    # helsinki
+    VIRTUAL_ENV=/opt/env/helsinki
+    python -m venv $VIRTUAL_ENV
+    PATH="$VIRTUAL_ENV/bin:$ORIG_PATH"
+    pip install --no-cache-dir --upgrade pip
+    pip install --no-cache-dir networkx==3.2.1 numpy==1.24.1 torch==2.2.1+cu118 torchvision==0.17.1+cu118 torchaudio==2.2.1+cu118 --index-url https://download.pytorch.org/whl/cu118
+    pip install --no-cache-dir transformers sentencepiece
+    # 
+    NOW=`date`
+    echo "export NOW=\"${NOW}\"" >> $SINGULARITY_ENVIRONMENT
+    #
+
+
+%runscript
+    # run when a container running
+    #
+    echo "Container was created $NOW"
+    echo "Arguments received: $*"
+    #
+    # The exec preceding the final echo command replaces the current entry in the process table (which originally was the call to Singularity). Thus the runscript shell process ceases to exist, and only the process running within the container remains.
+    ## exec echo "$@"
+    cd /FBK/server
+    echo exec bash CMD.httpserver_start.sh "$@"
+    exec bash CMD.httpserver_start.sh "$@"
+
+
+%startscript
+    # run when instance starts
+    #
+    echo "Container was created $NOW"
+    echo "Arguments received: $*"
+    #
+    # The exec preceding the final echo command replaces the current entry in the process table (which originally was the call to Singularity). Thus the runscript shell process ceases to exist, and only the process running within the container remains.
+    ## exec echo "$@"
+    cd /FBK/server
+    echo exec bash CMD.httpserver_start.sh "$@"
+    exec bash CMD.httpserver_start.sh "$@"
+
+
+
+%test
+    python3 -V
+    grep -q NAME=\"Ubuntu\" /etc/os-release
+    if [ $? -eq 0 ]; then
+        echo "Container base is Ubuntu as expected."
+    else
+        echo "Container base is not Ubuntu."
+        exit 1
+    fi
+    echo env variables:
+    echo SHAS_ROOT ${SHAS_ROOT}
+    echo CACHE_PATH ${CACHE_PATH}
+
+

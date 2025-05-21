@@ -167,8 +167,8 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 stateF   = f'{RootDir}/sys/{todoTaskId}.state'
                 #
                 exe      = task["exe"]
-                logOut   = f'{RootDir}/../../pipeline.LOG.out'
-                logErr   = f'{RootDir}/../../pipeline.LOG.err'
+                logOut   = f'{RootDir}/log/pipeline.LOG.out'
+                logErr   = f'{RootDir}/log/pipeline.LOG.err'
 
                 # args: audioF src tgt outSrtF, stateF 1> logOut 2> logErr
                 cmd = [exe, audioF, src, tgt, outSrtF, stateF]
@@ -192,8 +192,8 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def debugPipelineLogs(cls):
         global RootDir, DebugFlag
         #
-        logOut   = f'{RootDir}/../../pipeline.LOG.out'
-        logErr   = f'{RootDir}/../../pipeline.LOG.err'
+        logOut   = f'{RootDir}/log/pipeline.LOG.out'
+        logErr   = f'{RootDir}/log/pipeline.LOG.err'
 
         if DebugFlag:
             print(f'**** {logOut} ****')
@@ -346,7 +346,7 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 exe = ExeDirect
             elif (re.match('en', source) and re.match('(de|es|it|nl|ro)', target)):
                 exe = ExeCascade
-            elif (re.match('(de|el|es|it|nl|ro|sl)', source) and
+            elif (re.match('(de|el|en|es|it|nl|ro|sl)', source) and
                   (target == source)):
                 exe = ExeTranscribe
             else:
@@ -449,7 +449,7 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         return True
 
 
-Port      = 8080
+Port      = 8008
 RootDir   = os.path.abspath(os.path.dirname(__file__)) + "/data"
 DebugFlag = False
 CheckSecs = 10.0

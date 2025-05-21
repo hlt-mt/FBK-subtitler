@@ -72,20 +72,23 @@ EOF
 }
 
 
-test $# -ge 5 || { echo 'ARGS: wav srcLang tgtLang outSrt stateFile' ; exit 1 ; }
+test $# -ge 5 || { echo 'ARGS: wav srcLang tgtLang outSrt stateFile [logDir]' ; exit 1 ; }
 wav=$1
 src=$2
 tgt=$3
 outSrt=$4
 stateFile=$5
+logDir=$6
 
 cat << EOF
+$0
 args:
   wav $wav
   srcLang $src 
   tgtLang $tgt 
   outSrc $outSrt 
   stateFile $stateFile
+  logDir $logDir
 EOF
 
 test -f $wav || { echo cannot find wav $wav ; fail_exit $stateFile $outSrt ; }
@@ -97,7 +100,7 @@ case $src in
       prefix=multi
       ;;
 esac
-ckpt=$HOME/.cache/shas/${prefix}.checkpoint
+ckpt=${CACHE_PATH}/shas/${prefix}.checkpoint
 test -f $ckpt || { echo cannot find chkpt $ckpt ; fail_exit $stateFile $outSrt ; }
 
 _dd=$(dirname $outSrt)

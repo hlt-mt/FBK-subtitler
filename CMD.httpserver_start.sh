@@ -12,8 +12,8 @@ check_running() {
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
-pidF=$wDir/httpserver.PID
-log=$wDir/httpserver.LOG
+pidF=$wDir/data/log/httpserver.PID
+log=$wDir/data/log/httpserver.LOG
 exe=$wDir/httpserver.py
 
 if test -f $pidF 
