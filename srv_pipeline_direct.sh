@@ -107,7 +107,7 @@ scriptDir=$wDir/scripts
 
 exe1=${SHAS_ROOT}/src/supervised_hybrid/segment.py
 exe2=$scriptDir/createWavFromShasSegm.py
-exe3=faster-whisper
+exe3=$scriptDir/fw_process_audios_server.py
 exe4_1=$scriptDir/srtFixTS.pl
 exe4_2=$scriptDir/srt_fix_duration.pl
 exe4_3=$scriptDir/rmHallucinations.pl
@@ -183,23 +183,22 @@ deactivate
 source /opt/env/fw/bin/activate
 export HF_DATASETS_OFFLINE=1
 
-args="--language $src --task translate --model_size_or_path large-v3"
-args="$args --vad_filter True"
+args="-t"
 
-for wav in $tmpWavD2/*wav
+startSec=$(date +%s)
+echo $exe3 $args $src $tmpSrtD1 $tmpWavD2/*wav
+$exe3 $args $src $tmpSrtD1 $tmpWavD2/*wav
+endSec=$(date +%s)
+runSecs=$(expr $endSec - $startSec)
+echo runSecs $runSecs for $wav
+
+for srtF in $tmpSrtD1/*srt
 do
-  fn=$(basename $wav .wav)
-  srtF=$tmpSrtD1/${fn}.srt
-  startSec=$(date +%s)
-  echo $exe3 $args $wav -o $srtF
-  $exe3 $args $wav -o $srtF
-  endSec=$(date +%s)
-  runSecs=$(expr $endSec - $startSec)
-  echo runSecs $runSecs for $wav
   # skip empty srt
   if test $(wc -c < $srtF) -eq 0 ; then continue ; fi
+  fn=$(basename $srtF .srt)
   rmh=$tmpSrtD2/${fn}.srt
-  cat $srtF | $exe4_1 | $exe4_2 | $exe4_3 --inType srt > $rmh
+  cat $srtF | $exe4_2 | $exe4_3 --inType srt > $rmh
 done
 echo
 

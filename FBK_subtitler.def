@@ -44,7 +44,7 @@ From: nvidia/cuda:11.4.3-cudnn8-runtime-ubuntu20.04
     PATH="$VIRTUAL_ENV/bin:$ORIG_PATH"
     pip install --no-cache-dir --upgrade pip
     pip install --no-cache-dir networkx==3.2.1 numpy==1.24.1 torch==2.2.1+cu118 torchvision==0.17.1+cu118 torchaudio==2.2.1+cu118 --index-url https://download.pytorch.org/whl/cu118
-    pip install --no-cache-dir transformers sentencepiece
+    pip install --no-cache-dir transformers==4.52.1 sentencepiece
     # 
     NOW=`date`
     echo "export NOW=\"${NOW}\"" >> $SINGULARITY_ENVIRONMENT
