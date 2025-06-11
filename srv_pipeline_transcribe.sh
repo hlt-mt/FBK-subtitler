@@ -160,7 +160,7 @@ python $exe1 -wavs $tmpWavD1 -ckpt $ckpt -yaml $yamlF -max $maxSegLen
 # STEP 2
 #
 echo doing step 2 $(date +%s)
-$exe2 --segmentation-yaml $yamlF --wav-dir $tmpWavD1 --out-dir $tmpWavD2
+LD_LIBRARY_PATH=/lib/x86_64-linux-gnu:/usr/local/nvidia/lib:/usr/local/nvidia/lib64 $exe2 --segmentation-yaml $yamlF --wav-dir $tmpWavD1 --out-dir $tmpWavD2
 
 
 # STEPS 3 and 4
